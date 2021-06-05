@@ -10,14 +10,14 @@ from tqdm import tqdm
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='trial.')
-    parser.add_argument('trial', type=str, help='input trial no.')
-    t=parser.parse_args().trial
+    # parser = argparse.ArgumentParser(description='trial.')
+    # parser.add_argument('trial', type=str, help='input trial no.')
+    # t=parser.parse_args().trial
     print("loading data")
     X_V1=np.load("/home/lancelcy/PRIORI/data/X_V1.npy")
     Y_V1=np.load("/home/lancelcy/PRIORI/data/Y_V1.npy")
     df=pd.read_csv("/home/lancelcy/PRIORI/metadata/split_data.csv")
-    Tes_idx=np.array(df[df[f"trial{t}"].apply(lambda x:x==2)].index)
+    Tes_idx=np.array(df[df["trial1"].apply(lambda x:x==2)].index)
     X=np.take(X_V1,Tes_idx,axis=0)
     Y=np.take(Y_V1,Tes_idx,axis=0)
     print(X.shape)
@@ -26,7 +26,7 @@ def main():
     UAR=np.zeros(30)
     count=0
     for j in tqdm(range(30)):
-        dic=torch.load(f"/home/lancelcy/PRIORI/checkpt/CNN_models/trial{t}/{j}.checkpoint",map_location="cpu")
+        dic=torch.load(f"/home/lancelcy/PRIORI/checkpt/R21_CNN/{j}.checkpoint",map_location="cpu")
         model = Net()
         model.load_state_dict(dic)
 
@@ -39,8 +39,8 @@ def main():
         accuracy[count]=metrics.accuracy_score(Y,Y_pred)
         UAR[count]=metrics.recall_score(Y,Y_pred,average="macro")
         count+=1
-    np.save(f"/home/lancelcy/PRIORI/test_result/baseline/trial{t}/accuracy_V1.npy",accuracy)
-    np.save(f"/home/lancelcy/PRIORI/test_result/baseline/trial{t}/UAR_V1.npy",UAR)
+    np.save(f"/home/lancelcy/PRIORI/test_result/baseline/R21/accuracy_V1.npy",accuracy)
+    np.save(f"/home/lancelcy/PRIORI/test_result/baseline/R21/UAR_V1.npy",UAR)
 
 if __name__ == "__main__": 
 

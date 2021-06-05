@@ -1,0 +1,7 @@
+features,dataset,emotion,validation
+/path/to/data/1299.npy,0,1.0;0.0;0.0,0
+/path/to/data/65.npy,0,1.0;0.0;0.0,0
+/path/to/data/3026.npy,0,,0
+/path/to/data/1469.npy,1,0.0;0.0;1.0,1
+/path/to/data/75.npy,1,,0
+/path/to/data/5286.npy,1,0.0;0.6666666666666666;0.3333333333333333,1

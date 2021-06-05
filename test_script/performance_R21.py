@@ -22,7 +22,7 @@ def main():
     accuracy=np.zeros((9,30))
     UAR=np.zeros((9,30))
     for j in tqdm(range(30)):
-        dic=torch.load(f"/home/lancelcy/PRIORI/CNN_models/{j}.checkpoint",map_location="cpu")
+        dic=torch.load(f"/home/lancelcy/PRIORI/checkpt/CNN_models/trial{t}/{j}.checkpoint",map_location="cpu")
         model = Net()
         model.load_state_dict(dic)
         subject_no=0

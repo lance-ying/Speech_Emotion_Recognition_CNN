@@ -1,21 +1,19 @@
 import os
-from numpy.core.numeric import Infinity
 import torch
 import torch.nn as nn
 import numpy as np
 import pandas as pd
-import sklearn.metrics as metrics
-import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 from model import * 
 from tqdm import tqdm
 import argparse
 
+os.chdir("/home/lancelcy/PRIORI")
+
 def main():
     parser = argparse.ArgumentParser(description='trial.')
     parser.add_argument('trial', type=str, help='input trial no.')
     t=parser.parse_args().trial
-
     print("loading data")
 
     X_V1=np.load("/home/lancelcy/PRIORI/data/X_V1.npy")
@@ -23,7 +21,6 @@ def main():
     df=pd.read_csv("/home/lancelcy/PRIORI/metadata/split_data.csv")
     Tr_idx=np.array(df[df[f"trial{t}"].apply(lambda x:x==0)].index)
     Val_idx=np.array(df[df[f"trial{t}"].apply(lambda x:x==1)].index)
-    Tes_idx=np.array(df[df[f"trial{t}"].apply(lambda x:x==2)].index)
     X_train=np.take(X_V1,Tr_idx,axis=0)
     X_val=np.take(X_V1,Val_idx,axis=0)
     Y_train=np.take(Y_V1,Tr_idx,axis=0)
@@ -36,26 +33,24 @@ def main():
     train_loader=DataLoader(train_data, batch_size=64, shuffle=True)
     val_loader=DataLoader(val_data, batch_size=64, shuffle=True)
     
-    patience=5
-
     # training the model
     for i in tqdm(range(30)):
-
         #initializing
         model = Net()
         best_model=None
-        best_loss=np.float("inf")
+        best_loss=np.inf
         epoch=0
+        patience=5
+        cur_patience=patience
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.0001,weight_decay=1e-6)
-        loss_min = np.inf
         if torch.cuda.is_available():
             model = model.cuda(0)
             criterion = criterion.cuda(0)
 
         #training
-        while patience!=0:
+        while cur_patience!=0:
             loss_train = 0
             loss_valid = 0
             model.train()
@@ -81,18 +76,23 @@ def main():
                     loss=criterion(prediction, label)
                     loss_valid+=loss.item()
             new_val_loss=loss_valid/len(val_loader)
-            print("epoch ", epoch, "train_loss=",new_train_loss,"val_loss=",new_val_loss,"\n")
+            print("epoch ", epoch, "train_loss=",new_train_loss,"val_loss=",new_val_loss)
 
             if new_val_loss<=best_loss:
-                best_model=model
+                # print(new_val_loss)
+                best_model=model.state_dict()
+                # print(best_model)
                 best_loss=new_val_loss
-                patience=5
+                cur_patience=patience
             else:
-                patience-=1
+                cur_patience-=1
 
             epoch+=1
-        filename=os.path.join(os.cwd(),f"/checkpt/CNN_models/trial{t}",f"{j}.checkpoint")
-        torch.save(best_model.state_dict(), filename)
+
+        filename=os.path.join(f"/home/lancelcy/PRIORI/checkpt/CNN_models/trial{t}",f"{i}.checkpoint")
+        # print(filename)
+        with torch.no_grad():
+            torch.save(best_model, filename)
         
 
 if __name__ == "__main__": 
